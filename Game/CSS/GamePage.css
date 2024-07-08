@@ -1,0 +1,29 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+
+    background-color: black;
+}
+
+#gameWrapper {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#gameCanvas {
+    background-color: antiquewhite;
+}
+
+#fps {
+    position: absolute;
+    top: 0;
+    left: 0;
+    color: white;
+    font-size: 20px;
+}
