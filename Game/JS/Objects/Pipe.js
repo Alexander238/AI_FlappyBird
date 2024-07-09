@@ -3,6 +3,8 @@ const pipeBodyPath = "../../Assets/pipe_body.png";
 const showHitboxes = false;
 
 class Pipe {
+    passedByBird = false;
+
     constructor(canvas, isUpsideDown, speed = 25, length, upperY) {
         this.gameCanvas = canvas;
         this.isUpsideDown = isUpsideDown;

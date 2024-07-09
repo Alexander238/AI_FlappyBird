@@ -127,8 +127,9 @@ function checkCollisions() {
             minVelocity = velocity;
         }
 
-        //check if bird passed two pipes vertically and more than 1 second has passed before this can happen again
-        if (bird.x > pipe.bodyRightX /*+ (pipe.width / 2)*/ && timeSinceLastPipe > 0.5) {
+        //check if bird passed two pipes vertically and more than 0.5 second has passed before this can happen again
+        if (timeSinceLastPipe > 0.5 && bird.x > pipe.x + pipe.bodyWidth && !pipe.passedByBird && !pipe.isUpsideDown && !pipe.isOffScreen()) {
+            pipe.passedByBird = true;
             timeSinceLastPipe = 0;
             scoreBox.incrementScore();
         }
