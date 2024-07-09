@@ -2,7 +2,7 @@ import {InputHandler} from "./InputHandler.js";
 import {Bird} from "./Objects/Bird.js";
 import {Pipe} from "./Objects/Pipe.js";
 import {Scorebox} from "./Objects/Scorebox.js";
-import {getAIAction} from "./AI_Handler.js";
+import {getAIAction, storeExperience} from "./AI_Handler.js";
 
 const canvas = document.getElementById("gameCanvas");
 const fpsElement = document.getElementById("fps");
@@ -53,8 +53,8 @@ async function gameLoop(timestamp) {
     fpsElement.innerHTML = "FPS: " + fps;
 
     const time = timestamp / 1000;
-    const interval = time % 1 >= 0.99 && time % 1 <= 1;
-    if (interval && time - lastFlapTime > 0.05) {
+    //const interval = time % 1 >= 0.99 && time % 1 <= 1;
+    if (time - lastFlapTime > 0.05) {
         lastFlapTime = time;
         const state = {
             birdRightX: bird.rightHitboxX,
@@ -67,7 +67,8 @@ async function gameLoop(timestamp) {
             nextPipeBottomY: pipes[0].headBottomY,
             nextPipeTopY: pipes[0].headTopY,
 
-            score: scoreBox.score
+            score: scoreBox.score,
+            alive: !gameOver,
         };
 
         // async request to get AI action
@@ -81,21 +82,60 @@ async function gameLoop(timestamp) {
         requestAnimationFrame(gameLoop);
     } else {
         console.log("Game has ended");
+        location.reload();
+
+        // Turn off for training purposes
+        /*
         scoreLabel.innerText = "Score: " + scoreBox.score;
         gameOverWrapper.hidden = false;
+         */
     }
 }
 
 function asyncronousRequest(state) {
     console.log("Requesting...");
     getAIAction(state).then(action => {
-        console.log("Action received:", action)
         if (action === 1) {
             bird.flap();
+            const next_state = {
+                birdRightX: bird.rightHitboxX,
+                birdLeftX: bird.leftHitboxX,
+                birdBottomY: bird.bottomHitboxY,
+                birdTopY: bird.topRightHitboxY,
+
+                nextPipeRightX: pipes[0].headRightX,
+                nextPipeLeftX: pipes[0].headLeftX,
+                nextPipeBottomY: pipes[0].headBottomY,
+                nextPipeTopY: pipes[0].headTopY,
+
+                score: scoreBox.score,
+                alive: !gameOver
+            };
+
+            storeExperience(state, action, next_state, gameOver).then(r => _);
         }
     }).catch(error => {
         console.error('Error fetching AI action:', error);
     });
+}
+
+function storeFinalExperience() {
+    const state = {
+        birdRightX: bird.rightHitboxX,
+        birdLeftX: bird.leftHitboxX,
+        birdBottomY: bird.bottomHitboxY,
+        birdTopY: bird.topRightHitboxY,
+
+        nextPipeRightX: pipes[0].headRightX,
+        nextPipeLeftX: pipes[0].headLeftX,
+        nextPipeBottomY: pipes[0].headBottomY,
+        nextPipeTopY: pipes[0].headTopY,
+
+        score: scoreBox.score,
+        alive: !gameOver
+    };
+
+    storeExperience(state, null, null, calculateReward(state, {}), gameOver);
 }
 
 function update(timestamp, deltaTime) {
