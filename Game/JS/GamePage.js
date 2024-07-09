@@ -114,7 +114,6 @@ function checkCollisions() {
             && bird.bottomHitboxY <= pipe.headTopY;
 
         if (collisionWithBody || collisionWithHead) {
-            console.log("Game Over, Loser");
             gameOver = true;
             break;
         }
@@ -128,7 +127,7 @@ function checkCollisions() {
         }
 
         //check if bird passed two pipes vertically and more than 0.5 second has passed before this can happen again
-        if (timeSinceLastPipe > 0.5 && bird.x > pipe.x + pipe.bodyWidth && !pipe.passedByBird && !pipe.isUpsideDown && !pipe.isOffScreen()) {
+        if (timeSinceLastPipe > 0.5 && bird.x > pipe.x && !pipe.passedByBird && !pipe.isUpsideDown && !pipe.isOffScreen()) {
             pipe.passedByBird = true;
             timeSinceLastPipe = 0;
             scoreBox.incrementScore();
