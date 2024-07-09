@@ -1,6 +1,6 @@
 const imagePath = "../../Assets/bird.png";
 
-const showHitboxes = true;
+const showHitboxes = false;
 
 
 class Bird {

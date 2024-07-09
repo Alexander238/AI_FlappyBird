@@ -27,3 +27,133 @@ html, body {
     color: white;
     font-size: 20px;
 }
+
+#deathWindow {
+    position: fixed;
+
+    border-radius: 20px;
+    border: 4px solid black;
+
+    width: 50%;
+    height: 50%;
+    left: 25%;
+    top: 25%;
+    bottom: 0;
+
+    gap: 2%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+    background-color: navajowhite;
+}
+
+#gray_overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0.8);
+
+}
+
+.dText {
+    font-size: 30px;
+    color: black;
+
+}
+
+/* BUTTON
+ From:
+ https://uiverse.io/mobinkakei/cold-bat-89
+
+ Adjusted a bit.
+*/
+#playAgainBtn {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%) skewX(-15deg);
+    display: flex;
+    padding: 11px 33px;
+    text-decoration: none;
+    font-family: sans-serif;
+    font-size: 25px;
+    color: white;
+    background: #3771fd;
+    transition: 1s;
+    box-shadow: 6px 6px 0 black;
+    border: none;
+}
+
+#playAgainBtn:focus {
+    outline: none;
+}
+
+#playAgainBtn:hover {
+    transition: 0.5s;
+    box-shadow: 10px 10px 0 #ee38fd;
+}
+
+#playAgainBtn .second {
+    transition: 0.5s;
+    margin-right: 0px;
+}
+
+#playAgainBtn:hover  .second {
+    transition: 0.5s;
+    margin-right: 45px;
+}
+
+.span {
+    transform: skewX(15deg)
+}
+
+.second {
+    width: 20px;
+    margin-left: 30px;
+    position: relative;
+    top: 12%;
+}
+
+.one {
+    transition: 0.4s;
+    transform: translateX(-60%);
+}
+
+.two {
+    transition: 0.5s;
+    transform: translateX(-30%);
+}
+
+#playAgainBtn:hover .three {
+    animation: color_anim 1s infinite 0.2s;
+}
+
+#playAgainBtn:hover .one {
+    transform: translateX(0%);
+    animation: color_anim 1s infinite 0.6s;
+}
+
+#playAgainBtn:hover .two {
+    transform: translateX(0%);
+    animation: color_anim 1s infinite 0.4s;
+}
+
+@keyframes color_anim {
+    0% {
+        fill: white;
+    }
+
+    50% {
+        fill: #FBC638;
+    }
+
+    100% {
+        fill: white;
+    }
+}
