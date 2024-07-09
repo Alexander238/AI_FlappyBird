@@ -67,6 +67,17 @@ html, body {
 
 }
 
+#deathText {
+    position: absolute;
+    top: 10%;
+    font-family: sans-serif;
+    font-size: 50px;
+    font-weight: bold;
+    color: black;
+
+    border-bottom: 3px solid black;
+}
+
 /* BUTTON
  From:
  https://uiverse.io/mobinkakei/cold-bat-89
@@ -75,7 +86,7 @@ html, body {
 */
 #playAgainBtn {
     position: absolute;
-    bottom: 50px;
+    bottom: 10%;
     left: 50%;
     transform: translateX(-50%) skewX(-15deg);
     display: flex;
