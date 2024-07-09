@@ -1,7 +1,6 @@
 const pipeHeadPath = "../../Assets/pipe_head.png";
 const pipeBodyPath = "../../Assets/pipe_body.png";
-
-const showHitboxes = true;
+const showHitboxes = false;
 
 class Pipe {
     constructor(canvas, isUpsideDown, speed = 25, length, upperY) {
@@ -41,13 +40,13 @@ class Pipe {
         this.bodyTopY = this.y + this.length;
 
         if (this.isUpsideDown) {
-            this.headRightX = this.x;
-            this.headLeftX = this.x + this.headWidth;
+            this.headRightX = this.x + 2;
+            this.headLeftX = this.x + this.headWidth - 2;
             this.headBottomY = this.y + this.length;
             this.headTopY = this.y + this.length + this.headHeight;
         } else {
-            this.headRightX = this.x;
-            this.headLeftX = this.x + this.headWidth;
+            this.headRightX = this.x + 2;
+            this.headLeftX = this.x + this.headWidth - 2;
             this.headBottomY = this.y - this.headHeight;
             this.headTopY = this.y;
         }

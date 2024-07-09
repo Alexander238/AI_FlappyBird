@@ -6,6 +6,9 @@ import {Scorebox} from "./Objects/Scorebox.js";
 const canvas = document.getElementById("gameCanvas");
 const fpsElement = document.getElementById("fps");
 const context = canvas.getContext("2d");
+const playAgainButton = document.getElementById("playAgainBtn");
+const gameOverWrapper = document.getElementById("gameOverWrapper");
+const scoreLabel = document.getElementById("scoreLabel");
 
 let bird;
 let scoreBox;
@@ -25,18 +28,6 @@ let deltaTime;
 let fps;
 
 function start() {
-    window.devicePixelRatio = 1;
-    let heightSize = window.innerHeight * 0.7;
-    let widthSize = window.innerWidth * 0.7;
-
-    canvas.style.height = heightSize + "px";
-    canvas.style.width = widthSize + "px";
-
-    let scale = window.devicePixelRatio;
-    canvas.height = Math.floor(heightSize * scale);
-    canvas.width = Math.floor(widthSize * scale);
-    context.scale(scale, scale);
-
     // init objects
     bird = new Bird(canvas, context);
     scoreBox = new Scorebox(context);
@@ -64,6 +55,8 @@ function gameLoop(timestamp) {
         requestAnimationFrame(gameLoop);
     } else {
         console.log("Game has ended");
+        scoreLabel.innerText = "Score: " + scoreBox.score;
+        gameOverWrapper.hidden = false;
     }
 }
 
@@ -143,6 +136,25 @@ function checkCollisions() {
     timeSinceLastPipe += deltaTime;
 }
 
+function init() {
+    window.devicePixelRatio = 1;
+    let heightSize = window.innerHeight * 0.7;
+    let widthSize = window.innerWidth * 0.7;
+
+    canvas.style.height = heightSize + "px";
+    canvas.style.width = widthSize + "px";
+
+    let scale = window.devicePixelRatio;
+    canvas.height = Math.floor(heightSize * scale);
+    canvas.width = Math.floor(widthSize * scale);
+    context.scale(scale, scale);
+}
+
+playAgainButton.addEventListener("click", () => {
+    location.reload();
+});
+
 document.addEventListener("DOMContentLoaded", () => {
+    init();
     start();
 });
