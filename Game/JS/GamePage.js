@@ -16,7 +16,7 @@ let lastSpawn = 0;
 let gameOver = false;
 
 // Pipe settings
-const pipeGap = 150;
+const pipeGap = 190;
 const pipeSpeed = 200;
 const pipeSpawnInterval = 2000;
 
@@ -83,15 +83,12 @@ function update(timestamp, deltaTime) {
 
 function spawnPipe() {
     const canvasHeight = canvas.height;
-    const canvasWidth = canvas.width;
 
     const upperPipeLength = Math.random() * (canvasHeight / 2);
     const lowerPipeLength = canvasHeight - upperPipeLength - pipeGap;
 
-    const pipeWidth = canvasWidth / 18;
-
-    pipes.push(new Pipe(canvas, true, pipeSpeed, pipeWidth, upperPipeLength));
-    pipes.push(new Pipe(canvas, false, pipeSpeed, pipeWidth, lowerPipeLength, upperPipeLength + pipeGap));
+    pipes.push(new Pipe(canvas, true, pipeSpeed, upperPipeLength));
+    pipes.push(new Pipe(canvas, false, pipeSpeed, lowerPipeLength, upperPipeLength + pipeGap));
 }
 
 function draw() {
@@ -109,11 +106,21 @@ function checkCollisions() {
     for (let i = 0; i < pipes.length; i++) {
         const pipe = pipes[i];
 
-        if (bird.rightHitboxX > pipe.x
-            && bird.leftHitboxX < pipe.x + pipe.width
-            && bird.bottomHitboxY < pipe.y + pipe.length
-            && bird.topHitboxY > pipe.y) {
+        // pipe body
+        const collisionWithBody =
+            bird.leftHitboxX >= pipe.bodyRightX
+            && bird.rightHitboxX <= pipe.bodyLeftX
+            && bird.bottomHitboxY >= pipe.bodyBottomY
+            && bird.topRightHitboxY <= pipe.bodyTopY;
 
+        // pipe head
+        const collisionWithHead =
+            bird.leftHitboxX >= pipe.headRightX
+            && bird.rightHitboxX <= pipe.headLeftX
+            && bird.topRightHitboxY >= pipe.headBottomY
+            && bird.bottomHitboxY <= pipe.headTopY;
+
+        if (collisionWithBody || collisionWithHead) {
             console.log("Game Over, Loser");
             gameOver = true;
             break;
@@ -128,8 +135,7 @@ function checkCollisions() {
         }
 
         //check if bird passed two pipes vertically and more than 1 second has passed before this can happen again
-
-        if (bird.x > pipe.x + (pipe.width / 2) && timeSinceLastPipe > 0.5) {
+        if (bird.x > pipe.bodyRightX /*+ (pipe.width / 2)*/ && timeSinceLastPipe > 0.5) {
             timeSinceLastPipe = 0;
             scoreBox.incrementScore();
         }

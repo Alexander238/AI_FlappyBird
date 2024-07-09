@@ -1,6 +1,6 @@
 const imagePath = "../../Assets/bird.png";
 
-const showHitboxes = false;
+const showHitboxes = true;
 
 
 class Bird {
@@ -16,9 +16,6 @@ class Bird {
         this.birdImage.src = imagePath;
 
         this.birdImage.onload = () => {
-            this.imageWidth = this.birdImage.width / 10;
-            this.imageHeight = this.birdImage.height / 10;
-
             this.width = this.birdImage.width / 10;
             this.height = this.birdImage.height / 10;
         };
@@ -29,10 +26,10 @@ class Bird {
         this.y += this.velocity * deltaTime;
 
         // Update hitboxes due to image
-        this.leftHitboxX = this.x + 10;
-        this.rightHitboxX = this.x + this.width - 10;
+        this.rightHitboxX = this.x + 10;
+        this.leftHitboxX = this.x + this.width - 10;
         this.bottomHitboxY = this.y + 5;
-        this.topHitboxY = this.y + this.height - 5;
+        this.topRightHitboxY = this.y + this.height - 5;
 
         // Limit bird's top position
         if (this.y < 0) {
@@ -50,12 +47,34 @@ class Bird {
     render(context) {
         if (showHitboxes) {
             context.fillStyle = "red";
-            context.fillRect(this.leftHitboxX, this.bottomHitboxY, this.rightHitboxX - this.leftHitboxX, this.topHitboxY - this.bottomHitboxY);
+            context.fillRect(this.rightHitboxX, this.bottomHitboxY, this.leftHitboxX - this.rightHitboxX, this.topRightHitboxY - this.bottomHitboxY);
+
+            context.fillStyle = "blue";
+            // draw big blue circles at the corners of the hitbox
+            context.beginPath();
+            context.arc(this.rightHitboxX, this.bottomHitboxY, 5, 0, 2 * Math.PI);
+            context.fill();
+
+            context.fillStyle = "red";
+            context.beginPath();
+            context.arc(this.leftHitboxX, this.bottomHitboxY, 5, 0, 2 * Math.PI);
+            context.fill();
+
+            context.fillStyle = "green";
+            context.beginPath();
+            context.arc(this.rightHitboxX, this.topRightHitboxY, 5, 0, 2 * Math.PI);
+            context.fill();
+
+            context.fillStyle = "black";
+            context.beginPath();
+            context.arc(this.leftHitboxX, this.topRightHitboxY, 5, 0, 2 * Math.PI);
+            context.fill();
+
         }
         context.save();
-        context.translate(this.x + this.imageWidth / 2, this.y + this.imageHeight / 2);
+        context.translate(this.x + this.width / 2, this.y + this.height / 2);
         context.rotate(Math.PI / 6 * this.velocity / 500);
-        context.drawImage(this.birdImage, -this.imageWidth / 2, -this.imageHeight / 2, this.imageWidth, this.imageHeight);
+        context.drawImage(this.birdImage, -this.width / 2, -this.height / 2, this.width, this.height);
         context.restore();
     }
 
