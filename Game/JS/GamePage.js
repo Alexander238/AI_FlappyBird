@@ -2,6 +2,7 @@ import {InputHandler} from "./InputHandler.js";
 import {Bird} from "./Objects/Bird.js";
 import {Pipe} from "./Objects/Pipe.js";
 import {Scorebox} from "./Objects/Scorebox.js";
+import {getAIAction} from "./AI_Handler.js";
 
 const canvas = document.getElementById("gameCanvas");
 const fpsElement = document.getElementById("fps");
@@ -9,6 +10,8 @@ const context = canvas.getContext("2d");
 const playAgainButton = document.getElementById("playAgainBtn");
 const gameOverWrapper = document.getElementById("gameOverWrapper");
 const scoreLabel = document.getElementById("scoreLabel");
+
+let inputHandler;
 
 let bird;
 let scoreBox;
@@ -32,13 +35,14 @@ function start() {
     bird = new Bird(canvas, context);
     scoreBox = new Scorebox(context);
     spawnPipe();
-    const inputHandler = new InputHandler(bird);
+    inputHandler = new InputHandler(bird);
 
     // start game loop
     window.requestAnimationFrame(gameLoop);
 }
 
-function gameLoop(timestamp) {
+let lastFlapTime = 0;
+async function gameLoop(timestamp) {
     deltaTime = (timestamp - oldTimeStamp) / 1000;
 
     // Move forward in time with a maximum amount || Limit for very large deltaTime values.
@@ -47,6 +51,28 @@ function gameLoop(timestamp) {
 
     fps = Math.round(1 / deltaTime);
     fpsElement.innerHTML = "FPS: " + fps;
+
+    const time = timestamp / 1000;
+    const interval = time % 1 >= 0.99 && time % 1 <= 1;
+    if (interval && time - lastFlapTime > 0.05) {
+        lastFlapTime = time;
+        const state = {
+            birdRightX: bird.rightHitboxX,
+            birdLeftX: bird.leftHitboxX,
+            birdBottomY: bird.bottomHitboxY,
+            birdTopY: bird.topRightHitboxY,
+
+            nextPipeRightX: pipes[0].headRightX,
+            nextPipeLeftX: pipes[0].headLeftX,
+            nextPipeBottomY: pipes[0].headBottomY,
+            nextPipeTopY: pipes[0].headTopY,
+
+            score: scoreBox.score
+        };
+
+        // async request to get AI action
+        asyncronousRequest(state);
+    }
 
     update(timestamp, deltaTime);
     draw();
@@ -60,6 +86,18 @@ function gameLoop(timestamp) {
     }
 }
 
+function asyncronousRequest(state) {
+    console.log("Requesting...");
+    getAIAction(state).then(action => {
+        console.log("Action received:", action)
+        if (action === 1) {
+            bird.flap();
+        }
+    }).catch(error => {
+        console.error('Error fetching AI action:', error);
+    });
+}
+
 function update(timestamp, deltaTime) {
     bird.update(deltaTime);
 
@@ -69,9 +107,9 @@ function update(timestamp, deltaTime) {
     }
 
     pipes.forEach(pipe => pipe.update(deltaTime));
-    pipes = pipes.filter(pipe => !pipe.isOffScreen());
+    pipes = pipes.filter(pipe => pipe.headLeftX >= 0 || isNaN(pipe.headLeftX));
 
-    checkCollisions();
+        checkCollisions();
 }
 
 function spawnPipe() {

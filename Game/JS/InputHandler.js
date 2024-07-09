@@ -5,10 +5,14 @@ class InputHandler {
         this.addEventListener();
     }
 
+    flapBird() {
+        this.bird.flap();
+    }
+
     addEventListener() {
         window.addEventListener("keydown", (event) => {
             if (event.code === "Space") {
-                this.bird.flap();
+                this.flapBird();
             }
         });
     }
