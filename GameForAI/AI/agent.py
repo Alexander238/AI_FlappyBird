@@ -14,8 +14,8 @@ from FlappyBirdGameAI import FlappyBirdGameAI
 from model import Linear_Q_Network, QTrainer
 from helper import plot
 
-MAX_MEMORY = 100_000
-BATCH_SIZE = 1000
+MAX_MEMORY = 500_000
+BATCH_SIZE = 2000
 LEARNING_RATE = 0.001
 
 class Agent:
@@ -36,6 +36,7 @@ class Agent:
             pipe_x = game.pipes[0].x if game.pipes[0] is not None else 500
             lower_pipe_y = game.pipes[0].y if game.pipes[0] is not None else 500
         else:
+            pipe_x = 500
             lower_pipe_y = 500
         
         if len(game.pipes) > 1:
