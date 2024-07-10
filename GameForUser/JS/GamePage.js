@@ -52,28 +52,6 @@ async function gameLoop(timestamp) {
     fps = Math.round(1 / deltaTime);
     fpsElement.innerHTML = "FPS: " + fps;
 
-    const time = timestamp / 1000;
-    const interval = time % 1 >= 0.99 && time % 1 <= 1;
-    if (interval && time - lastFlapTime > 0.05) {
-        lastFlapTime = time;
-        const state = {
-            birdRightX: bird.rightHitboxX,
-            birdLeftX: bird.leftHitboxX,
-            birdBottomY: bird.bottomHitboxY,
-            birdTopY: bird.topRightHitboxY,
-
-            nextPipeRightX: pipes[0].headRightX,
-            nextPipeLeftX: pipes[0].headLeftX,
-            nextPipeBottomY: pipes[0].headBottomY,
-            nextPipeTopY: pipes[0].headTopY,
-
-            score: scoreBox.score
-        };
-
-        // async request to get AI action
-        asyncronousRequest(state);
-    }
-
     update(timestamp, deltaTime);
     draw();
 
@@ -84,18 +62,6 @@ async function gameLoop(timestamp) {
         scoreLabel.innerText = "Score: " + scoreBox.score;
         gameOverWrapper.hidden = false;
     }
-}
-
-function asyncronousRequest(state) {
-    console.log("Requesting...");
-    getAIAction(state).then(action => {
-        console.log("Action received:", action)
-        if (action === 1) {
-            bird.flap();
-        }
-    }).catch(error => {
-        console.error('Error fetching AI action:', error);
-    });
 }
 
 function update(timestamp, deltaTime) {
