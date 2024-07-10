@@ -36,6 +36,7 @@ class Agent:
             pipe_x = game.pipes[0].x if game.pipes[0] is not None else 500
             lower_pipe_y = game.pipes[0].y if game.pipes[0] is not None else 500
         else:
+            pipe_x = 500
             lower_pipe_y = 500
         
         if len(game.pipes) > 1:
