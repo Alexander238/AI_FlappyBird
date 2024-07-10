@@ -6,32 +6,27 @@ from Objects.bird import Bird
 from Objects.pipe import Pipe
 
 pygame.init()
-
-# Screen setup
-screen = pygame.display.set_mode((env.SCREEN_WIDTH, env.SCREEN_HEIGHT))
-clock = pygame.time.Clock()
 font = pygame.font.SysFont(None, 48)
 
-
-# reset -- DONE
-# reward
-# play(action) 
-# game_iteration
-# is_collision
-
-class Game:
-    def __init__(self, screen, font):
-        self.screen = screen
-        self.font = font
-
+class FlappyBirdGameAI:
+    def __init__(self):
         self.reset_game()
 
     def reset_game(self):
         self.bird = Bird()
         self.pipes = []
         self.score = 0
+        self.screen = pygame.display.set_mode((env.SCREEN_WIDTH, env.SCREEN_HEIGHT))
+        self.font = font
+        pygame.display.set_caption('Flappy Bird AI')
+        self.clock = pygame.time.Clock()
+
         self.last_spawn_time = pygame.time.get_ticks()
         self.game_over = False
+        self.ceiling = 0
+        self.floor = env.SCREEN_HEIGHT - self.bird.height
+        self.spawn_pipe()
+
 
     def spawn_pipe(self):
         upper_pipe_length = random.randint(100, env.SCREEN_HEIGHT // 2)
@@ -70,6 +65,9 @@ class Game:
             else:
                 if self.bird.y + self.bird.height > env.SCREEN_HEIGHT - pipe.length and self.bird.x + self.bird.width > pipe.x and self.bird.x < pipe.x + env.PIPE_BODY_IMAGE.get_width():
                     return True
+        
+        #if self.bird.y <= self.ceiling or self.bird.y >= self.floor:
+        #    return True
 
     def render(self):
         self.screen.fill((0, 0, 0))
@@ -83,6 +81,9 @@ class Game:
 
         if self.game_over:
             self.render_death_screen()
+        
+        pygame.display.flip()
+
 
     def render_death_screen(self):
         death_screen_overlay = pygame.Surface((env.SCREEN_WIDTH, env.SCREEN_HEIGHT))
@@ -111,17 +112,18 @@ class Game:
         # Update Bird/Pipes
         self.update()
 
-        reward = 0
+        reward = -1
         if self.check_collisions():
             reward = -10
             self.game_over = True
             return self.game_over, reward, self.score
         
         if self.checkIfPipePassed():
-            reward = 1
-            self.score == 10
+            reward = 10
+            self.score += 1
 
         self.render()
+        self.clock.tick(env.FPS)
 
         return self.game_over, reward, self.score
         

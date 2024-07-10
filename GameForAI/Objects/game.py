@@ -1,19 +1,20 @@
 import pygame
 import random
 import sys
+import os 
+env_Path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(env_Path)
+
 import environment_variables as env
 from Objects.bird import Bird
 from pipe import Pipe
+
 
 class Game:
     def __init__(self, screen, font):
         self.screen = screen
         self.font = font
-        self.bird = Bird()
-        self.pipes = []
-        self.score = 0
-        self.last_spawn_time = pygame.time.get_ticks()
-        self.game_over = False
+        self.reset_game()
 
     def reset_game(self):
         self.bird = Bird()
@@ -21,6 +22,7 @@ class Game:
         self.score = 0
         self.last_spawn_time = pygame.time.get_ticks()
         self.game_over = False
+        self.spawn_pipe()
 
     def spawn_pipe(self):
         upper_pipe_length = random.randint(100, env.SCREEN_HEIGHT // 2)
@@ -62,6 +64,10 @@ class Game:
             else:
                 if self.bird.y + self.bird.height > env.SCREEN_HEIGHT - pipe.length and self.bird.x + self.bird.width > pipe.x and self.bird.x < pipe.x + env.PIPE_BODY_IMAGE.get_width():
                     self.game_over = True
+        
+        # check if bird is out of screen
+        if self.bird.y <= 0 or self.bird.y + self.bird.height >= env.SCREEN_HEIGHT:
+            self.game_over = True
 
     def render(self):
         self.screen.fill((0, 0, 0))
@@ -90,3 +96,27 @@ class Game:
 
         play_again_text = self.font.render('Press ENTER to play again', True, (255, 255, 255))
         self.screen.blit(play_again_text, (env.SCREEN_WIDTH // 2 - play_again_text.get_width() // 2,env.SCREEN_HEIGHT // 2 + score_text.get_height() + 20))
+
+if __name__ == '__main__':
+    pygame.init()
+    screen = pygame.display.set_mode((env.SCREEN_WIDTH, env.SCREEN_HEIGHT))
+    font = pygame.font.Font(None, 36)
+    game = Game(screen, font)
+    clock = pygame.time.Clock()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    game.bird.flap()
+                if event.key == pygame.K_RETURN and game.game_over:
+                    game.reset_game()
+
+        print(game.pipes.__len__())
+        game.update()
+        game.render()
+        pygame.display.flip()
+        clock.tick(env.FPS)

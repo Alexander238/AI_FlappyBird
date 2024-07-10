@@ -2,14 +2,22 @@ import environment_variables as env
 import pygame
 
 class Pipe:
-    def __init__(self, x, length, is_upside_down):
+    def __init__(self, x, length, is_upside_down=False):
         self.x = x
-        self.length = length + env.PIPE_HEAD_IMAGE.get_height()
         self.is_upside_down = is_upside_down
+        self.length = length + env.PIPE_HEAD_IMAGE.get_height()
         self.passed = False
+
+        self.y = self.calculate_y()
 
     def update(self):
         self.x -= env.PIPE_SPEED
+
+    def calculate_y(self):
+        if self.is_upside_down:
+            return self.length
+        else:
+            return env.SCREEN_HEIGHT
 
     def render(self, screen):
         if self.is_upside_down:
