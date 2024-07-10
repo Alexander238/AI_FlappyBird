@@ -17,6 +17,10 @@ class Scorebox {
     getScore() {
         return this.score;
     }
+
+    reset(){
+        this.score = 0;
+    }
 }
 
 export { Scorebox };

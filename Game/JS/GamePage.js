@@ -30,6 +30,9 @@ const pipeSpawnInterval = 2000;
 let deltaTime;
 let fps;
 
+// AI training
+let timeAlive = 0.0;
+
 function start() {
     // init objects
     bird = new Bird(canvas, context);
@@ -44,7 +47,6 @@ function start() {
 let lastFlapTime = 0;
 async function gameLoop(timestamp) {
     deltaTime = (timestamp - oldTimeStamp) / 1000;
-
     // Move forward in time with a maximum amount || Limit for very large deltaTime values.
     deltaTime = Math.min(deltaTime, 0.1);
     oldTimeStamp = timestamp;
@@ -54,35 +56,50 @@ async function gameLoop(timestamp) {
 
     const time = timestamp / 1000;
     //const interval = time % 1 >= 0.99 && time % 1 <= 1;
-    if (time - lastFlapTime > 0.05) {
-        lastFlapTime = time;
-        const state = {
-            birdRightX: bird.rightHitboxX,
-            birdLeftX: bird.leftHitboxX,
-            birdBottomY: bird.bottomHitboxY,
-            birdTopY: bird.topRightHitboxY,
 
-            nextPipeRightX: pipes[0].headRightX,
-            nextPipeLeftX: pipes[0].headLeftX,
-            nextPipeBottomY: pipes[0].headBottomY,
-            nextPipeTopY: pipes[0].headTopY,
+    lastFlapTime = time;
+    const state = {
+        birdLeftX: bird.leftHitboxX,
+        birdBottomY: bird.bottomHitboxY,
 
-            score: scoreBox.score,
-            alive: !gameOver,
-        };
+        nextPipeLeftX: pipes[0] ? pipes[0].headLeftX : 0,
+        nextPipeTopY: pipes[0] ? pipes[0].headTopY : 0,
 
-        // async request to get AI action
-        asyncronousRequest(state);
-    }
+        score: 0.0 + scoreBox.score,
+        alive: !gameOver,
+        timeAlive: timeAlive
+    };
+
+    // async request to get AI action
+    asyncronousRequest(state);
 
     update(timestamp, deltaTime);
     draw();
 
     if (!gameOver) {
+        timeAlive += deltaTime;
         requestAnimationFrame(gameLoop);
     } else {
         console.log("Game has ended");
-        location.reload();
+
+        // send state one last time
+        const state = {
+            birdLeftX: bird.leftHitboxX,
+            birdBottomY: bird.bottomHitboxY,
+
+            nextPipeLeftX: pipes[0] ? pipes[0].headLeftX : 0,
+            nextPipeTopY: pipes[0] ? pipes[0].headTopY : 0,
+
+            score: 0.0 + scoreBox.score,
+            alive: !gameOver,
+            timeAlive: timeAlive
+        };
+
+        // async request to get AI action
+        asyncronousRequest(state);
+
+        //location.reload();
+        resetGame();
 
         // Turn off for training purposes
         /*
@@ -92,50 +109,41 @@ async function gameLoop(timestamp) {
     }
 }
 
+function resetGame() {
+    bird = new Bird(canvas, context);
+    inputHandler = new InputHandler(bird);
+    pipes = [];
+    scoreBox.reset();
+    timeAlive = 0;
+    gameOver = false;
+
+    requestAnimationFrame(gameLoop);
+}
+
 function asyncronousRequest(state) {
     console.log("Requesting...");
     getAIAction(state).then(action => {
-        if (action === 1) {
+        if (action === 1 && !gameOver) {
             bird.flap();
+        }
+
+        // Delay to allow the flap action to take effect
+        setTimeout(() => {
             const next_state = {
-                birdRightX: bird.rightHitboxX,
                 birdLeftX: bird.leftHitboxX,
                 birdBottomY: bird.bottomHitboxY,
-                birdTopY: bird.topRightHitboxY,
-
-                nextPipeRightX: pipes[0].headRightX,
                 nextPipeLeftX: pipes[0].headLeftX,
-                nextPipeBottomY: pipes[0].headBottomY,
                 nextPipeTopY: pipes[0].headTopY,
-
                 score: scoreBox.score,
-                alive: !gameOver
+                alive: !gameOver,
+                timeAlive: timeAlive
             };
 
             storeExperience(state, action, next_state, gameOver).then(r => _);
-        }
+        }, 2); // 2 ms
     }).catch(error => {
         console.error('Error fetching AI action:', error);
     });
-}
-
-function storeFinalExperience() {
-    const state = {
-        birdRightX: bird.rightHitboxX,
-        birdLeftX: bird.leftHitboxX,
-        birdBottomY: bird.bottomHitboxY,
-        birdTopY: bird.topRightHitboxY,
-
-        nextPipeRightX: pipes[0].headRightX,
-        nextPipeLeftX: pipes[0].headLeftX,
-        nextPipeBottomY: pipes[0].headBottomY,
-        nextPipeTopY: pipes[0].headTopY,
-
-        score: scoreBox.score,
-        alive: !gameOver
-    };
-
-    storeExperience(state, null, null, calculateReward(state, {}), gameOver);
 }
 
 function update(timestamp, deltaTime) {

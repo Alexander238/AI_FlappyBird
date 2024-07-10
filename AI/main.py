@@ -8,129 +8,86 @@ import time
 app = Flask(__name__)
 CORS(app)
 
-default_values = {
-        'birdRightX': 0,
-        'birdLeftX': 0,
-        'birdBottomY': 0,
-        'birdTopY': 0,
-        'nextPipeRightX': 0,
-        'nextPipeLeftX': 0,
-        'nextPipeBottomY': 0,
-        'nextPipeTopY': 0,
-        'score': 0,
-        'alive': True
-    }
-
-state_size = 10
+state_size = 7
 action_size = 2
-agent = ai.DQNAgent(3, 2)
+agent = ai.DQNAgent(state_size=state_size, action_size=action_size)
 
 @app.route('/get_AI_action', methods=['POST'])
 def get_AI_action():
     data = request.json
+    state = data['state']
 
-    birdRightX = data['state']['birdRightX']
-    birdLeftX = data['state']['birdLeftX']
-    birdBottomY = data['state']['birdBottomY']
-    birdTopY = data['state']['birdTopY']
-    nextPipeRightX = data['state']['nextPipeRightX']
-    nextPipeLeftX = data['state']['nextPipeLeftX']
-    nextPipeBottomY = data['state']['nextPipeBottomY']
-    nextPipeTopY = data['state']['nextPipeTopY']
-    score = data['state']['score']
-    alive = data['state']['alive']
-
-    processed_state = np.array([
-        birdRightX,
-        birdLeftX,
-        birdBottomY,
-        birdTopY,
-        nextPipeRightX,
-        nextPipeLeftX,
-        nextPipeBottomY,
-        nextPipeTopY,
-        score,
-        alive
+    state_values = np.array([
+        state['birdLeftX'],
+        state['birdBottomY'],
+        state['nextPipeLeftX'],
+        state['nextPipeTopY'],
+        state['score'],
+        state['alive'],
+        state['timeAlive']
     ]).reshape(1, state_size)
 
-    processed_state = np.squeeze(processed_state)
-
-    action = agent.act(processed_state)
+    action = agent.act(state_values)
     return jsonify({'action': action})
 
 @app.route('/store_experience', methods=['POST'])
 def store_experience():
     data = request.json
+    state = data['state']
+    next_state = data['next_state']
 
-    birdRightX = data['state']['birdRightX']
-    birdLeftX = data['state']['birdLeftX']
-    birdBottomY = data['state']['birdBottomY']
-    birdTopY = data['state']['birdTopY']
-    nextPipeRightX = data['state']['nextPipeRightX']
-    nextPipeLeftX = data['state']['nextPipeLeftX']
-    nextPipeBottomY = data['state']['nextPipeBottomY']
-    nextPipeTopY = data['state']['nextPipeTopY']
-    score = data['state']['score']
-    alive = data['state']['alive']
+    try:
+        state_values = np.array([
+            state['birdLeftX'],
+            state['birdBottomY'],
+            state['nextPipeLeftX'],
+            state['nextPipeTopY'],
+            state['score'],
+            state['alive'],
+            state['timeAlive']
+        ]).reshape(1, state_size)
+    except KeyError as e:
+        print(f"Missing key in state: {e}")
+        return 'Bad state data', 400
+    
+    try:
+        next_state_values = np.array([
+            next_state['birdLeftX'],
+            next_state['birdBottomY'],
+            next_state['nextPipeLeftX'],
+            next_state['nextPipeTopY'],
+            next_state['score'],
+            next_state['alive'],
+            next_state['timeAlive']
+        ]).reshape(1, state_size)
+    except KeyError as e:
+        print(f"Missing key in next_state: {e}")
+        return 'Bad next_state data', 400
 
-    state = np.array([
-        birdRightX,
-        birdLeftX,
-        birdBottomY,
-        birdTopY,
-        nextPipeRightX,
-        nextPipeLeftX,
-        nextPipeBottomY,
-        nextPipeTopY,
-        score,
-        alive
-    ]).reshape(1, state_size)
+    action = data['action']
+    reward = calculate_reward(state, next_state)
+    print(reward)
+    done = data['done']
 
-    action = data.get('action', None)
-    reward = calculate_reward(data['state'], data.get('next_state', {}))
-    print("reward: ", reward)
-
-    birdRightX = data['next_state']['birdRightX']
-    birdLeftX = data['next_state']['birdLeftX']
-    birdBottomY = data['next_state']['birdBottomY']
-    birdTopY = data['next_state']['birdTopY']
-    nextPipeRightX = data['next_state']['nextPipeRightX']
-    nextPipeLeftX = data['next_state']['nextPipeLeftX']
-    nextPipeBottomY = data['next_state']['nextPipeBottomY']
-    nextPipeTopY = data['next_state']['nextPipeTopY']
-    score = data['next_state']['score']
-    alive = data['next_state']['alive']
-
-    next_state = np.array([
-        birdRightX,
-        birdLeftX,
-        birdBottomY,
-        birdTopY,
-        nextPipeRightX,
-        nextPipeLeftX,
-        nextPipeBottomY,
-        nextPipeTopY,
-        score,
-        alive
-    ]).reshape(1, state_size)
-
-    done = data.get('done', False)
-
-    # Store experience in DQN agent memory
-    agent.remember(state, action, reward, next_state, done)
-
+    if None not in state_values and None not in next_state_values:
+        agent.remember(state_values, action, reward, next_state_values, done)
+    else:
+        print("Encountered None in state or next_state values")
+        return 'Bad state or next_state data', 400
+    
     return 'OK'
 
 def calculate_reward(current_state, next_state):
     total_reward = 0
 
     if not current_state.get('alive'):
-        total_reward -= 1.0
-    else:
-        total_reward -= 0.1
+        total_reward -= 10.0
+
+    if (next_state.get('timeAlive') - current_state.get('timeAlive')) > 0:
+        total_reward += 1.0
     
     if next_state.get('score') > current_state.get('score'):
-        total_reward += current_state.get('score') - next_state.get('score')
+        total_reward += 5.0
     
     return total_reward
 

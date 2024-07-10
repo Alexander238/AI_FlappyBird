@@ -4,11 +4,6 @@ from tensorflow import keras
 from keras import layers
 from keras import Sequential
 
-'''
-from tensorflow.python.keras.engine.sequential import Sequential
-from tensorflow.python.keras.layers.core import Dense
-'''
-
 from collections import deque
 import random
 import numpy as np
