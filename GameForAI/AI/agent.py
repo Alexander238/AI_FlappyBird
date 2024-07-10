@@ -14,8 +14,8 @@ from FlappyBirdGameAI import FlappyBirdGameAI
 from model import Linear_Q_Network, QTrainer
 from helper import plot
 
-MAX_MEMORY = 100_000
-BATCH_SIZE = 1000
+MAX_MEMORY = 500_000
+BATCH_SIZE = 2000
 LEARNING_RATE = 0.001
 
 class Agent:
@@ -70,7 +70,7 @@ class Agent:
     def get_action(self, state):
         # random moves: tradeoff between exploration and exploitation
         # At first, do random moves and explore the environment, then the better the model gets, the less random moves it will do and the more it will exploit the environment.
-        self.epsilon = 80 - self.number_of_games # The more games, the smaller epsilon gets, the less random moves the model will do.
+        self.epsilon = 120 - self.number_of_games # The more games, the smaller epsilon gets, the less random moves the model will do.
         final_move = 0
         if random.randint(0, 200) < self.epsilon:
             final_move = random.randint(0, 1)
@@ -93,7 +93,6 @@ def train():
 
     while True:
         current_state = agent.get_state(game)
-        print(f'Game Score {game.score}')
         move_of_agent = agent.get_action(current_state)
         # receive feedback from the environment
         game_over, reward, score = game.game_step(move_of_agent)
