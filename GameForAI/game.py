@@ -20,6 +20,10 @@ font = pygame.font.SysFont(None, 48)
 # is_collision
 
 class Game:
+    closest_right_pipe = None
+    horizontal_distance_to_closest_pipe = 0
+    vertical_distance_to_closest_pipe = 0
+
     def __init__(self, screen, font):
         self.screen = screen
         self.font = font
@@ -62,6 +66,27 @@ class Game:
 
         self.check_collisions()
         self.checkIfPipePassed()
+        self.updateClosestRightPipe()
+        self.update_distances()
+
+    def updateClosestRightPipe(self):
+        cp = None
+        for pipe in self.pipes:
+            if pipe.x < self.bird.x:
+                continue
+            else:
+                if not pipe.is_upside_down:
+                    if cp == None: 
+                        cp = pipe
+                    else: 
+                        cp = pipe if cp.x > pipe.x else cp
+
+        self.closest_right_pipe = cp
+
+    def update_distances(self):
+        if not self.closest_right_pipe == None:
+            self.horizontal_distance_to_closest_pipe = self.closest_right_pipe.x - self.bird.x 
+            self.vertical_distance_to_closest_pipe = self.closest_right_pipe.y - self.bird.y
 
     def checkIfPipePassed(self):
         for pipe in self.pipes:
