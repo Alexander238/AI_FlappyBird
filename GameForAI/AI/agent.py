@@ -22,16 +22,17 @@ class Agent:
     def __init__(self):
         self.number_of_games = 0
         self.epsilon = 0 # for randomness
-        self.gamma = 0.9 # discount rate
+        self.gamma = 0.95 # discount rate
         '''
         will automatically remove the first element if the length exceeds MAX_MEMORY
         ===> older and less important memories are removed first
         '''
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = Linear_Q_Network(7, 256, 1) # inputs, hidden layers, output
+        self.model = Linear_Q_Network(5, 256, 1) # inputs, hidden layers, output
         self.trainer = QTrainer(model=self.model, learning_rate=LEARNING_RATE, gamma=self.gamma)  
 
     def get_state(self, game):
+        '''
         if len(game.pipes) > 0:
             pipe_x = game.pipes[0].x if game.pipes[0] is not None else 500
             lower_pipe_y = game.pipes[0].y if game.pipes[0] is not None else 500
@@ -43,14 +44,19 @@ class Agent:
             upper_pipe_y = game.pipes[1].y if game.pipes[1] is not None else 500
         else:
             upper_pipe_y = 500
+        '''
 
         return np.array([
-            # Bird
-            game.bird.x, game.bird.y, 
             # Pipes
-            pipe_x, lower_pipe_y, upper_pipe_y,
+            game.horizontal_distance_to_closest_pipe, 
+            game.vertical_distance_to_closest_pipe,
+            # Bird
+            game.bird.x, game.bird.y, game.bird.velocity,
+            # Pipes
+            #pipe_x, lower_pipe_y, upper_pipe_y,
             # Environment
-            game.ceiling, game.floor], dtype=np.float32) # dtype=np.float32 would convert booleans to 0.0 or 1.0, if I want to add some later.
+            #game.ceiling, game.floor
+            ], dtype=np.float32) # dtype=np.float32 would convert booleans to 0.0 or 1.0, if I want to add some later.
     
     def remember(self, state, action, reward, next_state, game_over):
         self.memory.append((state, action, reward, next_state, game_over))
@@ -70,9 +76,9 @@ class Agent:
     def get_action(self, state):
         # random moves: tradeoff between exploration and exploitation
         # At first, do random moves and explore the environment, then the better the model gets, the less random moves it will do and the more it will exploit the environment.
-        self.epsilon = 120 - self.number_of_games # The more games, the smaller epsilon gets, the less random moves the model will do.
+        self.epsilon = 100 - self.number_of_games # The more games, the smaller epsilon gets, the less random moves the model will do.
         final_move = 0
-        if random.randint(0, 200) < self.epsilon:
+        if random.randint(0, 500) < self.epsilon:
             final_move = random.randint(0, 1)
         else:
             state0 = torch.tensor(state, dtype=torch.float)

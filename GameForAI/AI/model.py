@@ -6,14 +6,7 @@ import os # to save the model
 
 class Linear_Q_Network(nn.Module):
     '''
-    input_layer: 7 neurons, represents the state. The state is a list of 6 values: 
-        - bird's x position
-        - bird's y position
-        - pipe's x position
-        - lower pipe's y position
-        - upper pipe's y position
-        - ceiling
-        - floor
+    input_layer: Represents the state. 
 
     hidden_layer: 256 neurons, first hidden layer. It takes input from the input layer and passes output to the second hidden layer
 

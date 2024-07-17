@@ -1,0 +1,14 @@
+1. Activate Conda Environment
+- conda activate pygame_env
+
+2. Run the game in the environment
+- python AI/agent.py
+
+
+
+
+
+# Helpful
+- conda env list
+or
+- conda info --envs

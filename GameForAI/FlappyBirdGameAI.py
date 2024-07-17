@@ -9,6 +9,9 @@ pygame.init()
 font = pygame.font.SysFont(None, 48)
 
 class FlappyBirdGameAI:
+    horizontal_distance_to_closest_pipe = 0
+    vertical_distance_to_closest_pipe = 0
+    
     def __init__(self):
         self.reset_game()
 
@@ -16,6 +19,9 @@ class FlappyBirdGameAI:
         self.bird = Bird()
         self.pipes = []
         self.score = 0
+        self.closest_right_pipe = None
+        self.horizontal_distance_to_closest_pipe = 0
+        self.vertical_distance_to_closest_pipe = 0
         self.screen = pygame.display.set_mode((env.SCREEN_WIDTH, env.SCREEN_HEIGHT))
         self.font = font
         pygame.display.set_caption('Flappy Bird AI')
@@ -49,6 +55,26 @@ class FlappyBirdGameAI:
             pipe.update()
 
         self.pipes = [pipe for pipe in self.pipes if pipe.x + env.PIPE_BODY_IMAGE.get_width() > 0]
+
+    def updateClosestRightPipe(self):
+        cp = None
+        for pipe in self.pipes:
+            if pipe.x < self.bird.x:
+                continue
+            else:
+                if not pipe.is_upside_down:
+                    if cp == None: 
+                        cp = pipe
+                    else: 
+                        cp = pipe if cp.x > pipe.x else cp
+
+        self.closest_right_pipe = cp
+
+    def update_distances(self):
+        if not self.closest_right_pipe == None:
+            self.horizontal_distance_to_closest_pipe = self.closest_right_pipe.x - self.bird.x 
+            self.vertical_distance_to_closest_pipe = self.closest_right_pipe.y - self.bird.y
+
 
     def checkIfPipePassed(self):
         for pipe in self.pipes:
@@ -112,15 +138,18 @@ class FlappyBirdGameAI:
         # Update Bird/Pipes
         self.update()
 
-        reward = -1
+        reward = 0.01
         if self.check_collisions():
-            reward = -10
+            reward = -100
             self.game_over = True
             return self.game_over, reward, self.score
         
         if self.checkIfPipePassed():
-            reward = 10
+            reward = 100
             self.score += 1
+
+        self.updateClosestRightPipe()
+        self.update_distances()
 
         self.render()
         self.clock.tick(env.FPS)
